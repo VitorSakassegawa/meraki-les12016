@@ -1,0 +1,1505 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 9.4.5
+-- Dumped by pg_dump version 9.5.1
+
+-- Started on 2016-06-23 18:35:22 BRT
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 1 (class 3079 OID 12123)
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- TOC entry 2440 (class 0 OID 0)
+-- Dependencies: 1
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+--
+-- TOC entry 213 (class 1255 OID 18640)
+-- Name: deleteitem(integer, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION deleteitem(integer, integer) RETURNS void
+    LANGUAGE sql
+    AS $_$
+
+update estoque set
+quantidade = (quantidade - (select SUM(h.qtde_compra) from historico_compras 
+as h where h.id_cliente = $1 and h.id_produto = $2))
+where id_produto = $2
+
+$_$;
+
+
+ALTER FUNCTION public.deleteitem(integer, integer) OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- TOC entry 173 (class 1259 OID 18641)
+-- Name: clientes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE clientes (
+    id integer NOT NULL,
+    nome character varying(41),
+    rg character varying(9),
+    cpf character varying(11),
+    sexo character varying(1),
+    email character varying(41),
+    telefone character varying(12),
+    celular character varying(13),
+    id_endereco integer,
+    dt_nasc timestamp without time zone,
+    dt_cad timestamp without time zone,
+    status integer,
+    senha character varying(45),
+    id_endereco_entrega integer,
+    saldo double precision,
+    tipo character varying(45)
+);
+
+
+ALTER TABLE clientes OWNER TO postgres;
+
+--
+-- TOC entry 174 (class 1259 OID 18644)
+-- Name: clientes_entregas; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE clientes_entregas (
+    id integer NOT NULL,
+    id_cliente integer,
+    id_end_entrega integer
+);
+
+
+ALTER TABLE clientes_entregas OWNER TO postgres;
+
+--
+-- TOC entry 175 (class 1259 OID 18647)
+-- Name: clientes_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE clientes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE clientes_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2441 (class 0 OID 0)
+-- Dependencies: 175
+-- Name: clientes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE clientes_id_seq OWNED BY clientes.id;
+
+
+--
+-- TOC entry 176 (class 1259 OID 18649)
+-- Name: enderecos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE enderecos (
+    id integer NOT NULL,
+    logradouro character varying(42),
+    cep character varying(20),
+    bairro character varying(42),
+    estado character varying(42),
+    cidade character varying(42),
+    numero character varying(10)
+);
+
+
+ALTER TABLE enderecos OWNER TO postgres;
+
+--
+-- TOC entry 177 (class 1259 OID 18652)
+-- Name: enderecos_entrega; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE enderecos_entrega (
+    id integer NOT NULL,
+    logradouro character varying(45),
+    numero character varying(45),
+    bairro character varying(45),
+    cep character varying(45),
+    cidade character varying(45),
+    estado character varying(45),
+    id_cliente integer
+);
+
+
+ALTER TABLE enderecos_entrega OWNER TO postgres;
+
+--
+-- TOC entry 178 (class 1259 OID 18655)
+-- Name: enderecos_entrega_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE enderecos_entrega_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE enderecos_entrega_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2442 (class 0 OID 0)
+-- Dependencies: 178
+-- Name: enderecos_entrega_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE enderecos_entrega_id_seq OWNED BY enderecos_entrega.id;
+
+
+--
+-- TOC entry 179 (class 1259 OID 18657)
+-- Name: enderecos_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE enderecos_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE enderecos_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2443 (class 0 OID 0)
+-- Dependencies: 179
+-- Name: enderecos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE enderecos_id_seq OWNED BY enderecos.id;
+
+
+--
+-- TOC entry 180 (class 1259 OID 18659)
+-- Name: entregas; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE entregas (
+    id integer NOT NULL,
+    codigo character varying(45),
+    id_endereco integer,
+    id_pedido integer,
+    id_cliente integer,
+    status character varying(45)
+);
+
+
+ALTER TABLE entregas OWNER TO postgres;
+
+--
+-- TOC entry 181 (class 1259 OID 18662)
+-- Name: entregas_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE entregas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE entregas_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2444 (class 0 OID 0)
+-- Dependencies: 181
+-- Name: entregas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE entregas_id_seq OWNED BY entregas.id;
+
+
+--
+-- TOC entry 182 (class 1259 OID 18664)
+-- Name: estoque; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE estoque (
+    id integer NOT NULL,
+    id_produto integer,
+    data_insercao date,
+    id_usuario integer,
+    quantidade integer
+);
+
+
+ALTER TABLE estoque OWNER TO postgres;
+
+--
+-- TOC entry 183 (class 1259 OID 18667)
+-- Name: estoque_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE estoque_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE estoque_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2445 (class 0 OID 0)
+-- Dependencies: 183
+-- Name: estoque_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE estoque_id_seq OWNED BY estoque.id;
+
+
+--
+-- TOC entry 184 (class 1259 OID 18669)
+-- Name: fornecedores; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE fornecedores (
+    id integer NOT NULL,
+    nome character varying(40),
+    cnpj character varying(40),
+    telefone character varying(20),
+    email character varying(40),
+    id_endereco integer
+);
+
+
+ALTER TABLE fornecedores OWNER TO postgres;
+
+--
+-- TOC entry 185 (class 1259 OID 18672)
+-- Name: fornecedores_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE fornecedores_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE fornecedores_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2446 (class 0 OID 0)
+-- Dependencies: 185
+-- Name: fornecedores_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE fornecedores_id_seq OWNED BY fornecedores.id;
+
+
+--
+-- TOC entry 188 (class 1259 OID 18685)
+-- Name: historico_compras; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE historico_compras (
+    id integer NOT NULL,
+    id_produto integer,
+    id_cliente integer,
+    qtde_compra integer
+);
+
+
+ALTER TABLE historico_compras OWNER TO postgres;
+
+--
+-- TOC entry 189 (class 1259 OID 18688)
+-- Name: historico_compras_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE historico_compras_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE historico_compras_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2447 (class 0 OID 0)
+-- Dependencies: 189
+-- Name: historico_compras_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE historico_compras_id_seq OWNED BY historico_compras.id;
+
+
+--
+-- TOC entry 190 (class 1259 OID 18690)
+-- Name: login; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE login (
+    id integer NOT NULL,
+    login character varying(45),
+    senha character varying(45),
+    id_user integer,
+    status integer
+);
+
+
+ALTER TABLE login OWNER TO postgres;
+
+--
+-- TOC entry 191 (class 1259 OID 18693)
+-- Name: login_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE login_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE login_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2448 (class 0 OID 0)
+-- Dependencies: 191
+-- Name: login_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE login_id_seq OWNED BY login.id;
+
+
+--
+-- TOC entry 192 (class 1259 OID 18695)
+-- Name: pedidos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE pedidos (
+    id integer NOT NULL,
+    data_pedido timestamp without time zone,
+    total double precision,
+    id_cliente integer,
+    tipo_pagamento character varying(300),
+    data_normal date,
+    posicao character varying(300),
+    id_endereco_entrega integer,
+    status character varying(200),
+    frete double precision
+);
+
+
+ALTER TABLE pedidos OWNER TO postgres;
+
+--
+-- TOC entry 193 (class 1259 OID 18701)
+-- Name: pedidos_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE pedidos_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE pedidos_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2449 (class 0 OID 0)
+-- Dependencies: 193
+-- Name: pedidos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE pedidos_id_seq OWNED BY pedidos.id;
+
+
+--
+-- TOC entry 194 (class 1259 OID 18703)
+-- Name: pedidos_produtos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE pedidos_produtos (
+    id_pedidos integer NOT NULL,
+    id_produtos integer NOT NULL,
+    quantidade integer,
+    desconto double precision
+);
+
+
+ALTER TABLE pedidos_produtos OWNER TO postgres;
+
+--
+-- TOC entry 186 (class 1259 OID 18677)
+-- Name: produtos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE produtos (
+    id integer NOT NULL,
+    titulo character varying(45),
+    descricao character varying(300),
+    categoria character varying(20),
+    genero character varying(45),
+    valor double precision,
+    ano_lancamento character varying(15),
+    origem character varying(10),
+    material character varying(10),
+    numeracao character varying(100),
+    image character varying(45),
+    quantidade_estoque integer,
+    ativo integer
+);
+
+
+ALTER TABLE produtos OWNER TO postgres;
+
+--
+-- TOC entry 187 (class 1259 OID 18683)
+-- Name: products_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE products_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE products_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2450 (class 0 OID 0)
+-- Dependencies: 187
+-- Name: products_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE products_id_seq OWNED BY produtos.id;
+
+
+--
+-- TOC entry 195 (class 1259 OID 18711)
+-- Name: seq_saldos; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE seq_saldos
+    START WITH 7
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE seq_saldos OWNER TO postgres;
+
+--
+-- TOC entry 196 (class 1259 OID 18713)
+-- Name: saldos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE saldos (
+    id integer DEFAULT nextval('seq_saldos'::regclass) NOT NULL,
+    id_cliente integer,
+    saldo double precision
+);
+
+
+ALTER TABLE saldos OWNER TO postgres;
+
+--
+-- TOC entry 197 (class 1259 OID 18717)
+-- Name: transacoes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE transacoes (
+    id integer NOT NULL,
+    id_pedido integer,
+    id_cliente integer,
+    status character varying(45),
+    data_transacao date,
+    descricao character varying(300),
+    valor double precision,
+    numero_cartao character varying(45),
+    numero_parcelas character varying(45),
+    nome_cartao character varying(45)
+);
+
+
+ALTER TABLE transacoes OWNER TO postgres;
+
+--
+-- TOC entry 198 (class 1259 OID 18720)
+-- Name: transacao_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE transacao_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE transacao_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2451 (class 0 OID 0)
+-- Dependencies: 198
+-- Name: transacao_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE transacao_id_seq OWNED BY transacoes.id;
+
+
+--
+-- TOC entry 200 (class 1259 OID 18984)
+-- Name: trocas; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE trocas (
+    id integer NOT NULL,
+    id_pedido integer,
+    saldo double precision,
+    cupom character varying(12)
+);
+
+
+ALTER TABLE trocas OWNER TO postgres;
+
+--
+-- TOC entry 199 (class 1259 OID 18982)
+-- Name: trocas_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE trocas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE trocas_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 2452 (class 0 OID 0)
+-- Dependencies: 199
+-- Name: trocas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE trocas_id_seq OWNED BY trocas.id;
+
+
+--
+-- TOC entry 2230 (class 2604 OID 18722)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY clientes ALTER COLUMN id SET DEFAULT nextval('clientes_id_seq'::regclass);
+
+
+--
+-- TOC entry 2231 (class 2604 OID 18723)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY enderecos ALTER COLUMN id SET DEFAULT nextval('enderecos_id_seq'::regclass);
+
+
+--
+-- TOC entry 2232 (class 2604 OID 18724)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY enderecos_entrega ALTER COLUMN id SET DEFAULT nextval('enderecos_entrega_id_seq'::regclass);
+
+
+--
+-- TOC entry 2233 (class 2604 OID 18725)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY entregas ALTER COLUMN id SET DEFAULT nextval('entregas_id_seq'::regclass);
+
+
+--
+-- TOC entry 2234 (class 2604 OID 18726)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY estoque ALTER COLUMN id SET DEFAULT nextval('estoque_id_seq'::regclass);
+
+
+--
+-- TOC entry 2235 (class 2604 OID 18727)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY fornecedores ALTER COLUMN id SET DEFAULT nextval('fornecedores_id_seq'::regclass);
+
+
+--
+-- TOC entry 2237 (class 2604 OID 18728)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY historico_compras ALTER COLUMN id SET DEFAULT nextval('historico_compras_id_seq'::regclass);
+
+
+--
+-- TOC entry 2238 (class 2604 OID 18730)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY login ALTER COLUMN id SET DEFAULT nextval('login_id_seq'::regclass);
+
+
+--
+-- TOC entry 2239 (class 2604 OID 18731)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY pedidos ALTER COLUMN id SET DEFAULT nextval('pedidos_id_seq'::regclass);
+
+
+--
+-- TOC entry 2236 (class 2604 OID 18729)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY produtos ALTER COLUMN id SET DEFAULT nextval('products_id_seq'::regclass);
+
+
+--
+-- TOC entry 2241 (class 2604 OID 18733)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transacoes ALTER COLUMN id SET DEFAULT nextval('transacao_id_seq'::regclass);
+
+
+--
+-- TOC entry 2242 (class 2604 OID 18987)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY trocas ALTER COLUMN id SET DEFAULT nextval('trocas_id_seq'::regclass);
+
+
+--
+-- TOC entry 2405 (class 0 OID 18641)
+-- Dependencies: 173
+-- Data for Name: clientes; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY clientes (id, nome, rg, cpf, sexo, email, telefone, celular, id_endereco, dt_nasc, dt_cad, status, senha, id_endereco_entrega, saldo, tipo) FROM stdin;
+1	Admin	123456789	12345678910	M	admin@gmail.com	1111111111	11111111111	110	1994-08-18 00:00:00	2016-05-10 13:37:04.4	1	admin	1	200	admin
+77	Leticia Sakassegava	491176005	11111111111	M	leticia@gmail.com	1122291804	11947533667	119	1997-05-22 00:00:00	2016-03-24 11:46:37.148	1	admin	3	200	cliente
+89	Stephanie Siqueira	\N	11111111111	F	stephanie@gmail.com	1122291804	\N	135	1994-01-07 00:00:00	2016-05-13 17:03:13.305	1	admin	7	\N	cliente
+90	teste	\N	15261143802	M	teste@gmail.com	11961850622	\N	137	1998-01-08 00:00:00	2016-05-24 17:21:04.4	1	admin	9	\N	cliente
+69	Marcia Sakassegava	491176004	08815888810	M	marcia@gmail.com	1147227697	11947533667	110	1992-08-26 00:00:00	2016-03-20 16:25:19.588	1	admin	2	600	cliente
+65	Vitor Sakassegawa	395747182	44101834865	M	vitor@gmail.com	1122291803	11993740369	105	1994-08-18 00:00:00	2016-03-09 11:37:39.418	1	admin	1	500	cliente
+\.
+
+
+--
+-- TOC entry 2406 (class 0 OID 18644)
+-- Dependencies: 174
+-- Data for Name: clientes_entregas; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY clientes_entregas (id, id_cliente, id_end_entrega) FROM stdin;
+\.
+
+
+--
+-- TOC entry 2453 (class 0 OID 0)
+-- Dependencies: 175
+-- Name: clientes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('clientes_id_seq', 110, true);
+
+
+--
+-- TOC entry 2408 (class 0 OID 18649)
+-- Dependencies: 176
+-- Data for Name: enderecos; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY enderecos (id, logradouro, cep, bairro, estado, cidade, numero) FROM stdin;
+110	Rua Praia Grande	07123170	Jardim Santa Clara	São Paulo	Guarulhos	65
+135	Rua José Malozze	08773200	Vila Mogilar	São Paulo	Mogi das Cruzes	560
+119	Rua José Malozze	08773200	Vila Mogilar	São Paulo	Mogi das Cruzes	560
+137	Rua Praia Grande	07123170	Jardim Santa Clara	São Paulo	Guarulhos	1122229180
+105	Rua Praia Grande	07123170	Jardim Santa Clara	São Paulo	Guarulhos	65
+\.
+
+
+--
+-- TOC entry 2409 (class 0 OID 18652)
+-- Dependencies: 177
+-- Data for Name: enderecos_entrega; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY enderecos_entrega (id, logradouro, numero, bairro, cep, cidade, estado, id_cliente) FROM stdin;
+29	Praia Grande	65	Jardim Santa Clara	07123170	Guarulhos	SP	77
+30	Praia Grande	65	Jardim Santa Clara	07123170	Guarulhos	SP	65
+27	Praia Grande	65	Jardim Santa Clara	07123170	Guarulhos	SP	69
+18	Raul Valença	27	Jardim Santa Clara	07123180	Guarulhos	SP	69
+7	Jose Malozze	210	Mogilar	01234170	Mogi das Cruzes	SP	89
+2	Jose Malozze	210	Mogilar	01234170	Mogi das Cruzes	SP	69
+9	Raul Valença	27	Jardim Santa Clara	07123180	Guarulhos	SP	90
+3	Rua Praia Grande	10	Jardim Santa Clara	07123170	Guarulhos	SP	77
+1	Praia Grande	65	Jardim Santa Clara	07123180	Guarulhos	SP	65
+32	Professora Maria Aparecida Richa	99	Vila Nova Socorro	08790-660	Mogi das Cruzes	RJ	89
+31	Lagoa Dourada	90	Jardim Cocaia	07130210	Guarulhos	RJ	65
+33	Praia Grande	65	Jardim Santa Clara	07123170	Guarulhos	SC	69
+\.
+
+
+--
+-- TOC entry 2454 (class 0 OID 0)
+-- Dependencies: 178
+-- Name: enderecos_entrega_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('enderecos_entrega_id_seq', 33, true);
+
+
+--
+-- TOC entry 2455 (class 0 OID 0)
+-- Dependencies: 179
+-- Name: enderecos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('enderecos_id_seq', 159, true);
+
+
+--
+-- TOC entry 2412 (class 0 OID 18659)
+-- Dependencies: 180
+-- Data for Name: entregas; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY entregas (id, codigo, id_endereco, id_pedido, id_cliente, status) FROM stdin;
+\.
+
+
+--
+-- TOC entry 2456 (class 0 OID 0)
+-- Dependencies: 181
+-- Name: entregas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('entregas_id_seq', 1, false);
+
+
+--
+-- TOC entry 2414 (class 0 OID 18664)
+-- Dependencies: 182
+-- Data for Name: estoque; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY estoque (id, id_produto, data_insercao, id_usuario, quantidade) FROM stdin;
+1	1	2016-04-08	69	10
+4	4	2016-04-09	69	20
+3	3	2016-04-09	69	5
+\.
+
+
+--
+-- TOC entry 2457 (class 0 OID 0)
+-- Dependencies: 183
+-- Name: estoque_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('estoque_id_seq', 4, true);
+
+
+--
+-- TOC entry 2416 (class 0 OID 18669)
+-- Dependencies: 184
+-- Data for Name: fornecedores; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY fornecedores (id, nome, cnpj, telefone, email, id_endereco) FROM stdin;
+\.
+
+
+--
+-- TOC entry 2458 (class 0 OID 0)
+-- Dependencies: 185
+-- Name: fornecedores_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('fornecedores_id_seq', 7, true);
+
+
+--
+-- TOC entry 2420 (class 0 OID 18685)
+-- Dependencies: 188
+-- Data for Name: historico_compras; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY historico_compras (id, id_produto, id_cliente, qtde_compra) FROM stdin;
+1	3	69	4
+2	2	69	2
+3	2	69	3
+4	3	69	1
+\.
+
+
+--
+-- TOC entry 2459 (class 0 OID 0)
+-- Dependencies: 189
+-- Name: historico_compras_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('historico_compras_id_seq', 9, true);
+
+
+--
+-- TOC entry 2422 (class 0 OID 18690)
+-- Dependencies: 190
+-- Data for Name: login; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY login (id, login, senha, id_user, status) FROM stdin;
+\.
+
+
+--
+-- TOC entry 2460 (class 0 OID 0)
+-- Dependencies: 191
+-- Name: login_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('login_id_seq', 1, false);
+
+
+--
+-- TOC entry 2424 (class 0 OID 18695)
+-- Dependencies: 192
+-- Data for Name: pedidos; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY pedidos (id, data_pedido, total, id_cliente, tipo_pagamento, data_normal, posicao, id_endereco_entrega, status, frete) FROM stdin;
+191	2016-06-08 18:26:03.725	106.25	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+192	2016-06-08 18:26:34.238	85	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+193	2016-06-08 20:16:59.457	725.9000244140625	69	Boleto Bancario	2016-06-08	Pago!	33	Troca Autorizada	16.1000003814697266
+194	2016-06-08 20:43:01.732	127.5	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+195	2016-06-08 20:43:42.035	127.5	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+196	2016-06-08 23:54:07.506	170	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	31	Troca Autorizada	16.1000003814697266
+197	2016-06-08 23:59:27.475	85	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+198	2016-06-15 15:04:03.434	170	65	Boleto Bancario	2016-06-15	Pago!	30	Aguardando Entrega	16.1000003814697266
+199	2016-06-24 08:46:16.057	106.25	65	Boleto Bancario	2016-06-24	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+138	2016-05-20 14:50:07.514	95	69	Cartão de Crédito: 2x desconto 5% - R$ 47,5	2016-05-20	Pago!	2	Aguardando Entrega	14.8999996185302734
+139	2016-05-20 15:24:22.953	114	69	Cartão de Crédito: 2x desconto 5% - R$ 57	2016-05-20	Pago!	2	Aguardando Entrega	14.8999996185302734
+144	2016-05-21 19:09:44.148	99	69	Cartão de Crédito: 4x sem juros - R$ 24,75	2016-05-21	Pago!	2	Aguardando Entrega	0
+153	2016-05-22 11:40:24.288	456	69	Cartão de Crédito: 2x desconto 5% - R$ 114	2016-05-22	Pago!	2	Aguardando Entrega	14.8999996185302734
+154	2016-05-22 12:14:23.842	102	69	Boleto Bancario	2016-05-22	Aguardando Pagamento	2	Aguardando Entrega	14.8999996185302734
+161	2016-05-24 09:49:46.583	89.0999984741210938	69	Cartão de Crédito: 1x desconto de 10% - R$ 89,1	2016-05-24	Pago!	2	Aguardando Entrega	14.8999996185302734
+164	2016-05-24 16:50:43.9	84.1500015258789062	69	Boleto Bancario	2016-05-24	Pago!	18	Aguardando Entrega	14.8999996185302734
+172	2016-05-24 16:46:55.574	95	69	Cartão de Crédito: 3x desconto 5% - R$ 31,67	2016-05-24	Pago!	27	Aguardando Entrega	14.8999996185302734
+160	2016-05-23 11:21:05.78	85	69	Boleto Bancario	2016-05-23	Pago!	2	Aguardando Entrega	14.8999996185302734
+179	2016-05-25 15:45:07.246	48.5999984741210938	77	Cartão de Crédito: 1x desconto de 10% - R$ 48.6	2016-05-25	Pago!	29	Aguardando Troca	14.8999996185302734
+178	2016-05-25 15:12:55.222	45.9000015258789062	77	Boleto Bancario	2016-05-25	Pago!	29	Aguardando Troca	14.8999996185302734
+180	2016-05-25 20:38:02.209	150	69	Cartão de Crédito: 4x sem juros - R$ 37.5	2016-05-25	Pago!	27	Troca Autorizada	14.8999996185302734
+181	2016-06-08 06:09:15.012	404.600006103515625	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+182	2016-06-08 06:44:15.828	680	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	31	Aguardando Entrega	16.1000003814697266
+183	2016-06-08 06:46:13.757	170	89	Boleto Bancario	2016-06-08	Aguardando Pagamento	32	Aguardando Entrega	16.1000003814697266
+184	2016-04-27 10:25:32.739	183.600006103515625	69	Boleto Bancario	2016-04-27	Aguardando Pagamento	27	Aguardando Entrega	16.1000003814697266
+185	2016-04-27 10:29:55.493	89.0999984741210938	69	Cartão de Crédito: 1x desconto de 10% - R$ 89.1	2016-04-27	Pago!	2	Aguardando Entrega	16.1000003814697266
+186	2016-06-08 17:31:55.496	153	77	Boleto Bancario	2016-06-08	Aguardando Pagamento	3	Troca Autorizada	16.1000003814697266
+187	2016-06-08 18:06:05.532	306	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+188	2016-06-08 18:21:56.562	84.1500015258789062	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+189	2016-06-08 18:22:29.442	106.25	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+190	2016-06-08 18:23:35.171	127.5	65	Boleto Bancario	2016-06-08	Aguardando Pagamento	30	Aguardando Entrega	16.1000003814697266
+\.
+
+
+--
+-- TOC entry 2461 (class 0 OID 0)
+-- Dependencies: 193
+-- Name: pedidos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('pedidos_id_seq', 199, true);
+
+
+--
+-- TOC entry 2426 (class 0 OID 18703)
+-- Dependencies: 194
+-- Data for Name: pedidos_produtos; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY pedidos_produtos (id_pedidos, id_produtos, quantidade, desconto) FROM stdin;
+138	1	1	0.0500000007450580597
+139	10	1	0.0500000007450580597
+144	4	1	0
+153	7	2	0.0500000007450580597
+154	9	1	0.150000005960464478
+160	1	1	0.150000005960464478
+161	8	1	0.100000001490116119
+164	4	1	0.150000005960464478
+172	1	1	0.0500000007450580597
+178	23	1	0.150000005960464478
+179	23	1	0.100000001490116119
+180	27	1	0
+181	25	4	0.150000005960464478
+181	28	2	0.150000005960464478
+182	2	4	0.150000005960464478
+183	2	1	0.150000005960464478
+184	25	4	0.150000005960464478
+185	4	1	0.100000001490116119
+186	32	1	0.150000005960464478
+187	32	2	0.150000005960464478
+188	4	1	0.150000005960464478
+189	24	1	0.150000005960464478
+190	22	1	0.150000005960464478
+191	24	1	0.150000005960464478
+192	1	1	0.150000005960464478
+193	40	4	0.150000005960464478
+193	25	1	0.150000005960464478
+194	22	1	0.150000005960464478
+195	22	1	0.150000005960464478
+196	40	1	0.150000005960464478
+197	1	1	0.150000005960464478
+198	40	1	0.150000005960464478
+199	24	1	0.150000005960464478
+\.
+
+
+--
+-- TOC entry 2462 (class 0 OID 0)
+-- Dependencies: 187
+-- Name: products_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('products_id_seq', 43, true);
+
+
+--
+-- TOC entry 2418 (class 0 OID 18677)
+-- Dependencies: 186
+-- Data for Name: produtos; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY produtos (id, titulo, descricao, categoria, genero, valor, ano_lancamento, origem, material, numeracao, image, quantidade_estoque, ativo) FROM stdin;
+33	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	0
+7	Adidas ES6	ES6	Running	Masculino	120	2015	N	S	40	images/EB.jpg	10	1
+39	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	1
+10	Adidas ES7	ES7	Running	Masculino	120	2015	S	S	40	images/EB.jpg	7	1
+11	Adidas ES8	ES8	Running	Masculino	40.5	2015	S	S	40	images/EB.jpg	10	1
+12	Adidas ES9	ES9	Running	Masculino	150	2015	S	S	40	images/EB.jpg	10	1
+14	Adidas ES11	ES11	Running	Masculino	100	2015	S	S	40	images/EB.jpg	8	1
+18	Adidas ES12	ES12	Running	Masculino	30	2015	N	S	40	images/EB.jpg	10	1
+19	Mizuno Pro	Mizuno	Running	Masculino	50	2014	N	N	30	images/sem-imagem.jpg	5	0
+9	Nike	Tenis Nike	Running	Masculino	130	2015	N	N	40	images/EB.jpg	5	1
+2	Adidas ES2	ES2	Running	Masculino	200	2014	S	S	40	images/EB.jpg	10	1
+34	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	0
+23	Topper	abc                                    \r\n                                	Running	Masculino	54	2010	N	N	30	images/sem-imagem.jpg	5	1
+30	Adidas Glide II	Tenis de Caminhada	Running	Feminino	150	2014	N	N	48	images/Glide.jpg	11	0
+25	Adidas Glide	ABC	Running             	Feminino	54	2014	S	S	38	images/Glide.jpg	4	1
+26	Asics Noosa Tri	Noosa Tri	Running	Feminino	100	2015	S	S	38	images/NoosaTri.jpg	5	1
+35	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	0
+27	Mizuno Prophecy	Tenis de corrida	Running	Masculino	150	2012	S	S	44	images/Prophecy.jpg	5	1
+8	Adidas ES5	ES5	Running	Feminino	99	2015	S	S	40	images/EB.jpg	5	1
+13	Adidas ES10	ES10	Running	Masculino	130	2015	S	S	40	images/EB.jpg	12	0
+41	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	1
+31	Adidas Glide II	Tenis de Corrida	Running	Feminino	160	2015	N	N	46	images/Glide.jpg	4	0
+42	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	1
+20	Mizuno	Creation                                    \r\n                                	Running	Feminino	60	2015	N	N	36	images/sem-imagem.jpg	10	0
+29	Adidas Glide	UAL		Feminino	120	2010	S	S	40	images/Glide.jpg	11	1
+21	Hello	LOL                                    \r\n                                	Running	Feminino	125	2015	N	N	10	images/sem-imagem.jpg	9	1
+28	Asics Noosa	Asics Noosa	Running	Masculino	130	2015	N	N	14	images/NoosaTri.jpg	8	1
+43	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	1
+1	Adidas ESM	Energy Boost ESM	Running	Masculino	100	2015	N	N	40	images/EB.jpg	3	1
+3	Adidas ES3	ES3	Running	Masculino	100	2015	N	S	40	images/EB.jpg	2	0
+4	Adidas ES4	ES4	Runningg	Feminino	99	2013	S	S	40	images/EB.jpg	5	1
+32	Mizuno Elevation	Tenis de Corrida	Running	Feminino	180	2016	S	S	32	images/Elevation.jpg	7	1
+36	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	0
+40	Adidas Glide IIII	Tenis de Caminhada	Running	Feminino	200	2016	N	N	40	images/Glide.jpg	1	1
+37	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	0
+38	Adidas Glide III	Tenis p/ corrida	Running	Feminino	125	2016	S	S	38	images/Glide.jpg	12	1
+22	ABC	ABC                                    \r\n                                	Running	Masculino	150	2014	N	N	40	images/sem-imagem.jpg	2	0
+24	Puma	ABC	Corrida	Masculino	125	2012	S	N	35	images/sem-imagem.jpg	4	1
+\.
+
+
+--
+-- TOC entry 2428 (class 0 OID 18713)
+-- Dependencies: 196
+-- Data for Name: saldos; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY saldos (id, id_cliente, saldo) FROM stdin;
+2	77	2208.5
+11	69	274.0999755859375
+12	65	330
+\.
+
+
+--
+-- TOC entry 2463 (class 0 OID 0)
+-- Dependencies: 195
+-- Name: seq_saldos; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('seq_saldos', 12, true);
+
+
+--
+-- TOC entry 2464 (class 0 OID 0)
+-- Dependencies: 198
+-- Name: transacao_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('transacao_id_seq', 133, true);
+
+
+--
+-- TOC entry 2429 (class 0 OID 18717)
+-- Dependencies: 197
+-- Data for Name: transacoes; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY transacoes (id, id_pedido, id_cliente, status, data_transacao, descricao, valor, numero_cartao, numero_parcelas, nome_cartao) FROM stdin;
+98	164	69	Pago!	2016-05-25	Boleto Bancario	84.1500015258789062	\N	\N	\N
+95	161	69	Pedente!	2016-05-25	Cartão de Crédito	0		1x desconto de 10% - R$ 89,1	
+127	193	69	Troca Autorizada	2016-06-08	Boleto Bancario	725.9000244140625	\N	\N	\N
+88	154	69	Pago!	2016-05-25	Boleto Bancario	102	\N	\N	\N
+128	194	65	pedente	2016-06-08	Boleto Bancario	127.5	\N	\N	\N
+129	195	65	pedente	2016-06-08	Boleto Bancario	127.5	\N	\N	\N
+130	196	65	Troca Autorizada	2016-06-08	Boleto Bancario	170	\N	\N	\N
+113	179	77	Aguardando Troca	2016-05-25	Cartão de Crédito	0	123412341234	1x desconto de 10% - R$ 48.6	LETICIA HARUMI SAKASSEGAVA
+131	197	65	pedente	2016-06-08	Boleto Bancario	85	\N	\N	\N
+106	172	69	Pedente!	2016-05-25	Cartão de Crédito	0	123412341234	3x desconto 5% - R$ 31,67	MARCIA SAKASSEGAVA
+87	153	69	Pedente!	2016-05-25	Cartão de Crédito	0	123412341234	2x desconto 5% - R$ 114	MARCIA SAKASSEGAVA
+78	144	69	Pedente!	2016-05-25	Cartão de Crédito	0	123412341234	4x sem juros - R$ 24,75	MARCIA SAKASSEGAVA
+73	139	69	Pedente!	2016-05-20	Cartão de Crédito	0	123412341234	2x desconto 5% - R$ 57	MARCIA SAKASSEGAVA
+72	138	69	Pedente!	2016-05-20	Cartão de Crédito	0	123412341234	2x desconto 5% - R$ 47,5	MARCIA SAKASSEGAVA
+112	178	77	Aguardando Troca	2016-05-25	Boleto Bancario	45.9000015258789062	\N	\N	\N
+94	160	69	Pago!	2016-05-25	Boleto Bancario	85	\N	\N	\N
+132	198	65	Pago!	2016-06-15	Boleto Bancario	170	\N	\N	\N
+133	199	65	pedente	2016-06-24	Boleto Bancario	106.25	\N	\N	\N
+114	180	69	Troca Autorizada	2016-05-25	Cartão de Crédito	0	123412341234	4x sem juros - R$ 37.5	LETICIA HARUMI SAKASSEGAVA
+115	181	65	Pago!	2016-06-08	Boleto Bancario	404.600006103515625	\N	\N	\N
+116	182	65	pedente	2016-06-08	Boleto Bancario	680	\N	\N	\N
+117	183	89	pedente	2016-06-08	Boleto Bancario	170	\N	\N	\N
+118	184	69	pedente	2016-04-27	Boleto Bancario	183.600006103515625	\N	\N	\N
+119	185	69	Pedente!	2016-04-27	Cartão de Crédito	0	1234123412341234	1x desconto de 10% - R$ 89.1	Vitor Sakassegawa
+120	186	77	Troca Autorizada	2016-06-08	Boleto Bancario	153	\N	\N	\N
+121	187	65	pedente	2016-06-08	Boleto Bancario	306	\N	\N	\N
+122	188	65	pedente	2016-06-08	Boleto Bancario	84.1500015258789062	\N	\N	\N
+123	189	65	pedente	2016-06-08	Boleto Bancario	106.25	\N	\N	\N
+124	190	65	pedente	2016-06-08	Boleto Bancario	127.5	\N	\N	\N
+125	191	65	pedente	2016-06-08	Boleto Bancario	106.25	\N	\N	\N
+126	192	65	pedente	2016-06-08	Boleto Bancario	85	\N	\N	\N
+\.
+
+
+--
+-- TOC entry 2432 (class 0 OID 18984)
+-- Dependencies: 200
+-- Data for Name: trocas; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY trocas (id, id_pedido, saldo, cupom) FROM stdin;
+2	180	0	\N
+3	180	0	\N
+\.
+
+
+--
+-- TOC entry 2465 (class 0 OID 0)
+-- Dependencies: 199
+-- Name: trocas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('trocas_id_seq', 3, true);
+
+
+--
+-- TOC entry 2248 (class 2606 OID 18735)
+-- Name: pk_cliente_entrega; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY clientes_entregas
+    ADD CONSTRAINT pk_cliente_entrega PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2244 (class 2606 OID 18737)
+-- Name: pk_clientte; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY clientes
+    ADD CONSTRAINT pk_clientte PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2250 (class 2606 OID 18739)
+-- Name: pk_endereco; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY enderecos
+    ADD CONSTRAINT pk_endereco PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2252 (class 2606 OID 18741)
+-- Name: pk_endereco_entrega; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY enderecos_entrega
+    ADD CONSTRAINT pk_endereco_entrega PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2254 (class 2606 OID 18743)
+-- Name: pk_entregas; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY entregas
+    ADD CONSTRAINT pk_entregas PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2256 (class 2606 OID 18745)
+-- Name: pk_estoque; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY estoque
+    ADD CONSTRAINT pk_estoque PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2258 (class 2606 OID 18747)
+-- Name: pk_fornecedor; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY fornecedores
+    ADD CONSTRAINT pk_fornecedor PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2262 (class 2606 OID 18751)
+-- Name: pk_products; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY produtos
+    ADD CONSTRAINT pk_products PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2264 (class 2606 OID 18753)
+-- Name: pk_historico; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY historico_compras
+    ADD CONSTRAINT pk_historico PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2266 (class 2606 OID 18755)
+-- Name: pk_login; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY login
+    ADD CONSTRAINT pk_login PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2268 (class 2606 OID 18757)
+-- Name: pk_pedidos; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY pedidos
+    ADD CONSTRAINT pk_pedidos PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2270 (class 2606 OID 18759)
+-- Name: pk_pedidos_produtos; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY pedidos_produtos
+    ADD CONSTRAINT pk_pedidos_produtos PRIMARY KEY (id_pedidos, id_produtos);
+
+
+--
+-- TOC entry 2272 (class 2606 OID 18763)
+-- Name: pk_saldos; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY saldos
+    ADD CONSTRAINT pk_saldos PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2274 (class 2606 OID 18765)
+-- Name: pk_transacao; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transacoes
+    ADD CONSTRAINT pk_transacao PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2276 (class 2606 OID 18989)
+-- Name: pk_trocas; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY trocas
+    ADD CONSTRAINT pk_trocas PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2260 (class 2606 OID 18767)
+-- Name: unique_cnpj; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY fornecedores
+    ADD CONSTRAINT unique_cnpj UNIQUE (cnpj);
+
+
+--
+-- TOC entry 2246 (class 2606 OID 18769)
+-- Name: uq_rg; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY clientes
+    ADD CONSTRAINT uq_rg UNIQUE (rg);
+
+
+--
+-- TOC entry 2287 (class 2606 OID 18770)
+-- Name: fk_cliente; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY historico_compras
+    ADD CONSTRAINT fk_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id);
+
+
+--
+-- TOC entry 2293 (class 2606 OID 18775)
+-- Name: fk_cliente; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transacoes
+    ADD CONSTRAINT fk_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id);
+
+
+--
+-- TOC entry 2282 (class 2606 OID 18780)
+-- Name: fk_cliente_entrega; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY entregas
+    ADD CONSTRAINT fk_cliente_entrega FOREIGN KEY (id_cliente) REFERENCES clientes(id);
+
+
+--
+-- TOC entry 2279 (class 2606 OID 18785)
+-- Name: fk_cliente_entrega; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY clientes_entregas
+    ADD CONSTRAINT fk_cliente_entrega FOREIGN KEY (id_cliente) REFERENCES clientes(id);
+
+
+--
+-- TOC entry 2292 (class 2606 OID 18790)
+-- Name: fk_cliente_saldo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY saldos
+    ADD CONSTRAINT fk_cliente_saldo FOREIGN KEY (id_cliente) REFERENCES clientes(id);
+
+
+--
+-- TOC entry 2277 (class 2606 OID 18795)
+-- Name: fk_endereco; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY clientes
+    ADD CONSTRAINT fk_endereco FOREIGN KEY (id_endereco) REFERENCES enderecos(id);
+
+
+--
+-- TOC entry 2283 (class 2606 OID 18800)
+-- Name: fk_endereco_entrega; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY entregas
+    ADD CONSTRAINT fk_endereco_entrega FOREIGN KEY (id_endereco) REFERENCES enderecos(id);
+
+
+--
+-- TOC entry 2280 (class 2606 OID 18805)
+-- Name: fk_entrega_cliente; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY clientes_entregas
+    ADD CONSTRAINT fk_entrega_cliente FOREIGN KEY (id_end_entrega) REFERENCES enderecos_entrega(id);
+
+
+--
+-- TOC entry 2289 (class 2606 OID 18810)
+-- Name: fk_entrega_pedidos; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY pedidos
+    ADD CONSTRAINT fk_entrega_pedidos FOREIGN KEY (id_endereco_entrega) REFERENCES enderecos_entrega(id);
+
+
+--
+-- TOC entry 2286 (class 2606 OID 18815)
+-- Name: fk_forn_end; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY fornecedores
+    ADD CONSTRAINT fk_forn_end FOREIGN KEY (id_endereco) REFERENCES enderecos(id);
+
+
+--
+-- TOC entry 2281 (class 2606 OID 18820)
+-- Name: fk_id_cliente; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY enderecos_entrega
+    ADD CONSTRAINT fk_id_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id);
+
+
+--
+-- TOC entry 2278 (class 2606 OID 18825)
+-- Name: fk_id_endereco_entrega; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY clientes
+    ADD CONSTRAINT fk_id_endereco_entrega FOREIGN KEY (id_endereco_entrega) REFERENCES enderecos_entrega(id);
+
+
+--
+-- TOC entry 2285 (class 2606 OID 18830)
+-- Name: fk_produto; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY estoque
+    ADD CONSTRAINT fk_produto FOREIGN KEY (id_produto) REFERENCES produtos(id);
+
+
+--
+-- TOC entry 2290 (class 2606 OID 18835)
+-- Name: fk_produtos; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY pedidos_produtos
+    ADD CONSTRAINT fk_produtos FOREIGN KEY (id_produtos) REFERENCES produtos(id);
+
+
+--
+-- TOC entry 2288 (class 2606 OID 18840)
+-- Name: fk_produtos; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY historico_compras
+    ADD CONSTRAINT fk_produtos FOREIGN KEY (id_produto) REFERENCES produtos(id);
+
+
+--
+-- TOC entry 2294 (class 2606 OID 18845)
+-- Name: fk_pedido; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY transacoes
+    ADD CONSTRAINT fk_pedido FOREIGN KEY (id_pedido) REFERENCES pedidos(id);
+
+
+--
+-- TOC entry 2295 (class 2606 OID 18990)
+-- Name: fk_pedido; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY trocas
+    ADD CONSTRAINT fk_pedido FOREIGN KEY (id_pedido) REFERENCES pedidos(id);
+
+
+--
+-- TOC entry 2284 (class 2606 OID 18850)
+-- Name: fk_pedido_entrega; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY entregas
+    ADD CONSTRAINT fk_pedido_entrega FOREIGN KEY (id_pedido) REFERENCES pedidos(id);
+
+
+--
+-- TOC entry 2291 (class 2606 OID 18855)
+-- Name: fk_pedidos; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY pedidos_produtos
+    ADD CONSTRAINT fk_pedidos FOREIGN KEY (id_pedidos) REFERENCES pedidos(id);
+
+
+--
+-- TOC entry 2439 (class 0 OID 0)
+-- Dependencies: 7
+-- Name: public; Type: ACL; Schema: -; Owner: VitorSakassegawa
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM "VitorSakassegawa";
+GRANT ALL ON SCHEMA public TO "VitorSakassegawa";
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+-- Completed on 2016-06-23 18:35:22 BRT
+
+--
+-- PostgreSQL database dump complete
+--
+
