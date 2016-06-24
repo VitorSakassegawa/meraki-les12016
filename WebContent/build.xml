@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="LATIN1"?>
+
+<project basedir="." default="deploy" name="AjaxApp">
+	<!-- LE O ARQUIVO DE PROPRIEDADES -->
+	<property file="common.ant.properties" />
+	
+	<path id="class.web">
+		<pathelement location="${Bin.Dir}"/>
+		<pathelement location="${Lib.Dir}/servlet-api.jar"/>
+		<pathelement location="${Lib.Dir}/dwr.jar"/>
+	</path>
+	
+	<!-- CRIA OS DIRETORIOS -->
+	<target name="cria-dir">
+		<delete dir="${Dist.Dir}"/>
+		<mkdir dir="${Dist.Dir}" />
+	</target>
+
+	<target name="compilar" depends="cria-dir">
+		<javac destdir="${Bin.Dir}" srcdir="${Src.Dir}">
+			<classpath refid="class.web"/>
+			<classpath />
+		</javac>
+	</target>
+
+	<!-- CRIA O PACOTE WAR -->
+	<target name="war" depends="compilar">
+		<war destfile="${Dist.Dir}/${War.File}.war" webxml="${Web.Inf}/web.xml">
+			<webinf dir="${Web.Inf}" excludes="web.xml" />
+			<lib dir="${Lib.Dir}">
+			</lib>
+			<classes dir="${Bin.Dir}" includes="**/*.class" />
+			<classes dir="${Src.Dir}" includes="**/*.xml,**/*.properties" />
+			<fileset dir="${Web.Dir}" includes="**/*.*" excludes="${Web.Inf}/web.xml">
+			</fileset>
+		</war>
+	</target>
+
+	<!-- COPIA O PACOTE WAR PARA O DIRETORIO DE DEPLOY -->
+	<target name="deploy" depends="war">
+		<copy todir="${Deploy.Dir}">
+			<fileset dir="${Dist.Dir}" includes="*" />
+		</copy>
+	</target>
+
+</project>
